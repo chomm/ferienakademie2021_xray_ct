@@ -21,7 +21,7 @@ inverse problem. Test out different deep learning approaches for tomographic rec
 2. Implement an analytic and an interative reconstruction method from scratch.
   * analytic reconstruction: di filtered back-projection (FBP) as in the seminar talks
 
-3.
+3. ..  missing
 
 4.
 
