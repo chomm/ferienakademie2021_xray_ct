@@ -12,14 +12,17 @@ inverse problem. Test out different deep learning approaches for tomographic rec
 
 ## Project steps:
 1. Implement a simulator of X-ray CT for 2D from scratch.
-  * how to represent the geometry of a 2D X-ray CT setup?
-  * how to represent the object to be imaged?
-  * how to trace Xrays thorugh the object to be imaged, i.e how to compute line integrals?
-  * implement a forward projection operation to simulate a CT aquisition (sinogram)
-  * https://gitlab.lrz.de/IP/elsa
+	* how to represent the geometry of a 2D X-ray CT setup?
+	* how to represent the object to be imaged?
+  	* how to trace Xrays thorugh the object to be imaged, i.e how to compute line integrals?
+  	* implement a forward projection operation to simulate a CT aquisition (sinogram)
+  	* https://gitlab.lrz.de/IP/elsa
   
 2. Implement an analytic and an interative reconstruction method from scratch.
-  * analytic reconstruction: di filtered back-projection (FBP) as in the seminar talks
+  	* analytic reconstruction: do the filtered back-projection (FBP) as in the seminar talks
+		* you will need a back-projection operator (counterpart of the forward-projection)
+	* iterative reconstruction: choose some iterative solver (e.g. CG) as in the seminar talks
+	
 
 3. ..  missing
 
