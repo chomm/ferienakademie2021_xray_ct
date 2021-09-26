@@ -49,12 +49,10 @@ def create_sinogram_groundtruth(image):
     sinogram = radon(image, theta=theta)
     dx, dy = 0.5 * 180.0 / max(image.shape), 0.5 / sinogram.shape[0]
 
-    #ax2.imshow(sinogram, extent=(-dx, 180.0 + dx, -dy, sinogram.shape[0] + dy), aspect='auto')
     ax2.imshow(sinogram, extent=(-dx, 180.0 + dx, -dy, sinogram.shape[0] + dy), cmap='gray')
     ax2.set_title("Sinogram")
 
     fig.tight_layout()
-    #plt.show()
     return sinogram
 
 
@@ -77,16 +75,6 @@ def create_sinogram_manually(image):
             )
         ])
 
-    # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4.5))
-    #
-    # ax1.set_title('Original')
-    # ax1.imshow(image, cmap='gray')
-    #
-    # ax2.set_title("Sinogram")
-    # ax2.imshow(sinogram, cmap="gray")
-    #fig.tight_layout()
-    #plt.show()
-
     return sinogram
 
 
@@ -100,8 +88,6 @@ def filter_sinogramm(sinogram):
     filter_ramp = abs(omega)
     filter_ramp = fftshift(filter_ramp)
 
-    plt.figure()
-    plt.plot(omega, filter_ramp)
     sinogram_filtered = np.zeros((projection_length, number_angles))
 
     for i in range(number_angles):
@@ -110,6 +96,7 @@ def filter_sinogramm(sinogram):
         sinogram_filtered[:, i] = np.real(ifft(projection_filtered))
 
     return sinogram_filtered
+
 
 def backproject(sinogram, theta):
 
@@ -141,34 +128,51 @@ def backproject(sinogram, theta):
 # Define variables
 resolution = 256
 theta = np.arange(0, 180)
+phantoms = {1: "square", 2: "square_double", 3: "shepp-logan"}
+phantom = phantoms[3]
+methods = {1: "skimage", 2: "picture_rotation", 3: "ray_tracing"}
+method = methods[2]
 
 # Create phantom
-image = create_phantom_square_double(resolution)
-#image = create_phantom_shepp_logan(resolution)
-plt.figure()
-plt.imshow(image, cmap='gray')
+if phantom == "square":
+    image = create_phantom_square(resolution)
+elif phantom == "square_double":
+    image = create_phantom_square_double(resolution)
+elif phantom == "shepp-logan":
+    image = create_phantom_shepp_logan(resolution)
 
 # Simulate sinogram (forward-projection)
-sinogram = create_sinogram_manually(image)
-plt.figure()
-plt.imshow(sinogram, cmap='gray')
+if method == "skimage":
+    sinogram = create_sinogram_groundtruth(image)
+elif method == "picture_rotation":
+    sinogram = create_sinogram_manually(image)
 
-# Filter sinogram with rampfilter
+# Filter sinogram using  ramp filter
 sinogram_filtered = filter_sinogramm(sinogram)
-plt.figure()
-plt.imshow(sinogram_filtered, cmap='gray')
 
 # Backprojection
 backprojArray = backproject(sinogram_filtered, theta)
 
-# Backprojection
-backprojArray_nf = backproject(sinogram, theta)
-
 # Plotting
-plt.figure()
-plt.imshow(backprojArray, cmap='gray')
-plt.figure()
-plt.imshow(backprojArray_nf, cmap='gray')
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 4), gridspec_kw={'width_ratios': [1,1,1], 'height_ratios': [1]})
+
+ax1.set_title('Original')
+ax1.imshow(image, cmap='gray')
+
+ax2.set_title(f'Sinogram {method}')
+ax2.imshow(sinogram, cmap='gray')
+
+ax3.set_title('Filtered Backprojection')
+ax3.imshow(backprojArray, cmap='gray')
+
+# set the spacing between subplots
+plt.subplots_adjust(left=0.1,
+                    bottom=0.1,
+                    right=0.9,
+                    top=0.9,
+                    wspace=0.4,
+                    hspace=0.4)
+
 plt.show()
 
 
