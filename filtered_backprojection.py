@@ -56,7 +56,7 @@ def create_sinogram_groundtruth(image):
     return sinogram
 
 
-def create_sinogram_manually(image):
+def create_sinogram_manually(image, noise):
 
     theta = np.arange(0, 180)
     # Project the sinogram (ie calculate Radon transform)
@@ -74,6 +74,14 @@ def create_sinogram_manually(image):
                 , axis=0
             )
         ])
+
+        if noise:
+            additive_noise = np.random.normal(0, 1, sinogram.shape)
+            sinogram = sinogram + additive_noise*0.2
+
+            # Gaussian noise filter
+            sinogram = scipy.ndimage.gaussian_filter(sinogram, sigma=0.01)
+
 
     return sinogram
 
@@ -129,9 +137,9 @@ def backproject(sinogram, theta):
 resolution = 256
 theta = np.arange(0, 180)
 phantoms = {1: "square", 2: "square_double", 3: "shepp-logan"}
-phantom = phantoms[3]
+phantom = phantoms[2]
 methods = {1: "skimage", 2: "picture_rotation", 3: "ray_tracing"}
-method = methods[2]
+method = methods[1]
 
 # Create phantom
 if phantom == "square":
@@ -145,35 +153,56 @@ elif phantom == "shepp-logan":
 if method == "skimage":
     sinogram = create_sinogram_groundtruth(image)
 elif method == "picture_rotation":
-    sinogram = create_sinogram_manually(image)
+    sinogram = create_sinogram_manually(image, noise=False)
 
 # Filter sinogram using  ramp filter
 sinogram_filtered = filter_sinogramm(sinogram)
 
 # Backprojection
-backprojArray = backproject(sinogram_filtered, theta)
+output_filtered = backproject(sinogram, theta)
+output = backproject(sinogram_filtered, theta)
 
-# Plotting
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 4), gridspec_kw={'width_ratios': [1,1,1], 'height_ratios': [1]})
+plot = False
+if plot:
+    # Plotting
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 4), gridspec_kw={'width_ratios': [1,1,1], 'height_ratios': [1]})
 
-ax1.set_title('Original')
-ax1.imshow(image, cmap='gray')
+    ax1.set_title('Original')
+    ax1.imshow(image, cmap='gray')
 
-ax2.set_title(f'Sinogram {method}')
-ax2.imshow(sinogram, cmap='gray')
+    ax2.set_title(f'Sinogram {method}')
+    ax2.imshow(sinogram, cmap='gray')
 
-ax3.set_title('Filtered Backprojection')
-ax3.imshow(backprojArray, cmap='gray')
+    ax3.set_title('Filtered Backprojection')
+    ax3.imshow(output_filtered, cmap='gray')
 
-# set the spacing between subplots
-plt.subplots_adjust(left=0.1,
-                    bottom=0.1,
-                    right=0.9,
-                    top=0.9,
-                    wspace=0.4,
-                    hspace=0.4)
+    # set the spacing between subplots
+    plt.subplots_adjust(left=0.1,
+                        bottom=0.1,
+                        right=0.9,
+                        top=0.9,
+                        wspace=0.4,
+                        hspace=0.4)
 
-plt.show()
+    plt.show()
+
+else:
+    fig_input = plt.figure(1)
+    plt.imshow(image, cmap='gray')
+
+    fig_sinogramm, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4))
+    ax1.imshow(sinogram, cmap='gray')
+    ax2.imshow(sinogram_filtered, cmap='gray')
+
+    fig_output, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4))
+    ax1.imshow(output_filtered, cmap='gray')
+    ax2.imshow(output, cmap='gray')
+
+    plt.show()
+
+
+
+
 
 
 
